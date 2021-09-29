@@ -25,19 +25,29 @@ const url = require("url");
 // })
 
 const replaceTemplate = (temp, prod) => {
-	let signal = temp.replace(/{%IMAGE%}/g, prod.image);
-	signal = temp.replace(/{%PRODUCTNAME%}/g, prod.productName);
-	signal = temp.replace(/{%QUANTITY%}/g, prod.quantity);
-	signal = temp.replace(/{%PRICE%}/g, prod.price);
-	signal = temp.replace(/{%NUTRIENTS%}/g, prod.nutrients);
-	signal = temp.replace(/{%FROM%}/g, prod.from);
-	signal = temp.replace(/{%DESCRIPTION%}/g, prod.description);
-	signal = temp.replace(/{%ID%}/g, prod.id);
-	if (!prod.organic) {
-		signal = temp.replace(/{%NOT_ORGANIC%}/g, "not-organic");
-	}
+	// ** ** Changed the name of the variable to be more descriptive ** **
+	// The problem was that you were reassigning the "temp" instead of output.
+	// ex: the first line you replaced the "{%IMAGE%}" so the "output" now has the "{%IMAGE%}" changed and in the second line you replaced the {%PRODUCTNAME%} but you replaced from the "temp" and not from the "output" that has the "{%IMAGE%}" changed and so on so for so in your code only the last line will be changed.
+	// -- SOLUTION is to reassign the "output" and not the "temp"
+	// -- TIP: do not manipulate the arguments directly create a new variable. in our Example the variable is "output"
 
-	return signal;
+	// first line
+	let output = temp.replace(/{%IMAGE%}/g, prod.image);
+	// second line
+	output = output.replace(/{%PRODUCTNAME%}/g, prod.productName);
+	// third line
+	output = output.replace(/{%QUANTITY%}/g, prod.quantity);
+	output = output.replace(/{%PRICE%}/g, prod.price);
+	output = output.replace(/{%NUTRIENTS%}/g, prod.nutrients);
+	output = output.replace(/{%FROM%}/g, prod.from);
+	output = output.replace(/{%DESCRIPTION%}/g, prod.description);
+	output = output.replace(/{%ID%}/g, prod.id);
+	if (!prod.organic) {
+		output = output.replace(/{%NOT_ORGANIC%}/g, "not-organic");
+	}
+	// console.log(output);
+
+	return output;
 };
 const tempproduct = fs.readFileSync(
 	`${__dirname}/templates/template-product.html`,
@@ -54,8 +64,9 @@ const tempcards = fs.readFileSync(
 // const tempcard = fs.readFileSync(`${__dirname}/template/template-card.html`,'utf-8');
 
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+// ** ** removed an indentation for next 2 lines
 const dataObj = JSON.parse(data);
-console.log(dataObj);
+// console.log(dataObj);
 
 const server = http.createServer((req, res) => {
 	console.log(req.url);
@@ -63,22 +74,26 @@ const server = http.createServer((req, res) => {
 
 	//Product
 	if (pathName === "/product") {
-		res.writeHead(200, { "content-type": "text/html" });
+		// ** ** "content-type" => "C" to uppercase
+		res.writeHead(200, { "Content-type": "text/html" });
 
 		res.end("We are introducing product page");
 
 		//Overview
 	} else if (pathName === "/overview") {
-		res.writeHead(200, { "content-type": "text/html" });
+		res.writeHead(200, { "Content-type": "text/html" });
 
-		const cardsHtml = dataObj.map((el) => replaceTemplate(tempcards, el));
+		const cardsHtml = dataObj
+			.map((el) => replaceTemplate(tempcards, el))
+			.join("");
 		console.log(cardsHtml);
-
-		res.end("Hey Welcome Overview");
+		// const finalOutput = tempoverview.replace("{%PRODUCT_CARDS%}", cardsHtml);
+		// res.end(finalOutput);
+		res.end("Welcome to the overview page");
 
 		//Api
 	} else if (pathName === "/api") {
-		res.writeHead(200, { "content-type": "application/json" });
+		res.writeHead(200, { "Content-type": "application/json" });
 		res.end(data);
 	} else {
 		res.writeHead(404, {
